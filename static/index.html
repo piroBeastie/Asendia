@@ -1,0 +1,467 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="icon" href="data:,">
+    <title>Asendia — AI Interview</title>
+    <style>
+        /* Always light: plain cream background, dark-brown accents. */
+        :root {
+            color-scheme: light;
+            --bg:        #f4ecd9;
+            --bg-soft:   #ebe0c9;
+            --surface:   #faf4e7;
+            --surface-2: #efe5d0;
+            --ink:       #241c12;
+            --ink-2:     #4a3a28;
+            --muted:     #8a7a62;
+            --accent:    #5a3921;
+            --accent-2:  #8a5a34;
+            --accent-soft: rgba(90, 57, 33, 0.10);
+            --ok:        #4c7a3a;
+            --warn:      #9c6a20;
+            --err:       #a83322;
+            --border:    #e2d6bc;
+            --shadow:    0 6px 20px rgba(60, 42, 15, 0.07);
+            --glow-alex: rgba(90, 57, 33, 0.18);
+            --glow-user: rgba(76, 122, 58, 0.40);
+        }
+
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+
+        body {
+            font-family: 'Inter', 'Segoe UI', -apple-system, BlinkMacSystemFont, Roboto, sans-serif;
+            background: var(--bg);
+            color: var(--ink);
+            height: 100vh;
+            overflow: hidden;
+            -webkit-font-smoothing: antialiased;
+        }
+
+        /* ── Start Screen ── */
+        #start-screen {
+            height: 100vh;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            padding: 1.5rem;
+        }
+
+        .start-card {
+            background: var(--surface);
+            border: 1px solid var(--border);
+            border-radius: 24px;
+            padding: 3rem 3.25rem;
+            text-align: center;
+            min-width: 380px;
+            box-shadow: var(--shadow);
+        }
+
+        .brand {
+            font-size: 0.72rem;
+            letter-spacing: 0.24em;
+            color: var(--accent);
+            text-transform: uppercase;
+            font-weight: 600;
+            margin-bottom: 0.65rem;
+        }
+
+        .start-card h1 {
+            font-size: 1.8rem;
+            font-weight: 600;
+            margin-bottom: 0.4rem;
+            color: var(--ink);
+        }
+
+        .start-card .sub {
+            color: var(--muted);
+            font-size: 0.95rem;
+            margin-bottom: 2.25rem;
+        }
+
+        .start-hint {
+            color: var(--muted);
+            font-size: 0.76rem;
+            line-height: 1.5;
+            margin: 1.1rem auto 0;
+            max-width: 300px;
+        }
+
+        .role-chip {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.5rem;
+            color: var(--ink-2);
+            font-size: 0.88rem;
+            font-weight: 500;
+            background: var(--surface-2);
+            padding: 0.6rem 1.1rem;
+            border-radius: 999px;
+            margin-bottom: 1.75rem;
+            border: 1px solid var(--border);
+        }
+
+        #start-btn {
+            background: var(--accent);
+            color: #fff;
+            border: none;
+            padding: 0.9rem 2.5rem;
+            border-radius: 999px;
+            font-size: 0.98rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: transform 0.15s ease, background 0.2s, box-shadow 0.2s;
+            width: 100%;
+            box-shadow: 0 6px 18px rgba(90, 57, 33, 0.30);
+        }
+
+        #start-btn:hover { filter: brightness(1.12); transform: translateY(-1px); }
+        #start-btn:active { transform: translateY(0); }
+        #start-btn:disabled { background: var(--muted); cursor: not-allowed; box-shadow: none; }
+
+        /* ── Call Screen ── */
+        #call-screen {
+            display: none;
+            height: 100vh;
+            flex-direction: column;
+        }
+
+        .top-bar {
+            padding: 1rem 1.5rem 0.5rem;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .top-brand {
+            font-size: 0.72rem;
+            letter-spacing: 0.24em;
+            color: var(--accent);
+            text-transform: uppercase;
+            font-weight: 600;
+        }
+
+        .turn-badge {
+            font-size: 0.72rem;
+            color: var(--ink-2);
+            background: var(--surface);
+            border: 1px solid var(--border);
+            padding: 0.35rem 0.85rem;
+            border-radius: 999px;
+            font-weight: 500;
+            letter-spacing: 0.02em;
+        }
+
+        .call-main {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            position: relative;
+            padding: 1rem;
+        }
+
+        /* ── Alex — name + morphing voice line above it ── */
+        .alex {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 1.1rem;
+        }
+
+        .voice-line {
+            width: min(340px, 74vw);
+            height: 72px;
+            overflow: visible;
+        }
+
+        .voice-line polyline {
+            fill: none;
+            stroke: var(--accent);
+            stroke-width: 3;
+            stroke-linecap: round;
+            stroke-linejoin: round;
+            transition: stroke 0.4s ease, opacity 0.4s ease;
+            filter: drop-shadow(0 3px 8px var(--glow-alex));
+        }
+
+        .voice-line.idle polyline    { stroke: var(--accent-2); opacity: 0.55; stroke-width: 2.5; filter: none; }
+        .voice-line.thinking polyline{ stroke: var(--warn);     opacity: 0.7;  filter: none; }
+        .voice-line.speaking polyline{ stroke: var(--accent);   opacity: 1; }
+
+        .name {
+            font-size: 1.5rem;
+            font-weight: 600;
+            color: var(--ink);
+            letter-spacing: 0.01em;
+        }
+
+        .status {
+            font-size: 0.85rem;
+            color: var(--muted);
+            min-height: 1.3em;
+            font-weight: 500;
+            letter-spacing: 0.02em;
+        }
+
+        /* ── Bottom Bar — bare mic (mute toggle), no circle ── */
+        .bottom-bar {
+            padding: 1.25rem 1.25rem 2rem;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            flex-direction: column;
+            gap: 0.55rem;
+        }
+
+        .mic-wrap {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 0.35rem;
+        }
+
+        /* live user-voice waveform above the mic */
+        .mic-line {
+            width: 92px;
+            height: 22px;
+            opacity: 0;
+            transition: opacity 0.25s ease;
+            overflow: visible;
+        }
+        .mic-line.active { opacity: 1; }
+        .mic-line polyline {
+            fill: none;
+            stroke: var(--ok);
+            stroke-width: 2.5;
+            stroke-linecap: round;
+            stroke-linejoin: round;
+        }
+
+        .mic-btn {
+            background: none;
+            border: none;
+            cursor: pointer;
+            padding: 0.4rem;
+            color: var(--ok);
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            transition: color 0.18s ease, transform 0.18s ease, filter 0.18s ease;
+        }
+
+        .mic-btn:hover {
+            transform: translateY(-2px) scale(1.06);
+            filter: drop-shadow(0 4px 10px var(--glow-user));
+        }
+        .mic-btn:active { transform: translateY(0) scale(1.0); }
+        .mic-btn:focus-visible { outline: none; color: var(--accent); }
+
+        /* open mic = live green pulse; muted = flat muted color */
+        .mic-btn.live { animation: mic-live 1.8s ease-in-out infinite; }
+        .mic-btn.muted { color: var(--muted); }
+        .mic-btn .icon-off { display: none; }
+        .mic-btn.muted .icon-on { display: none; }
+        .mic-btn.muted .icon-off { display: inline; }
+
+        @keyframes mic-live {
+            0%, 100% { filter: drop-shadow(0 0 0 rgba(106,142,91,0.0)); }
+            50%      { filter: drop-shadow(0 0 10px var(--glow-user)); }
+        }
+
+        .mic-svg { width: 38px; height: 38px; }
+
+        .mic-hint {
+            font-size: 0.78rem;
+            color: var(--muted);
+            font-weight: 500;
+            letter-spacing: 0.02em;
+            min-height: 1.2em;
+        }
+
+        .end-btn {
+            background: none;
+            border: 1px solid var(--border);
+            color: var(--muted);
+            font-size: 0.74rem;
+            font-weight: 500;
+            letter-spacing: 0.04em;
+            padding: 0.4rem 1rem;
+            border-radius: 999px;
+            cursor: pointer;
+            margin-top: 0.35rem;
+            transition: color 0.18s, border-color 0.18s;
+        }
+        .end-btn:hover { color: var(--err); border-color: var(--err); }
+        .end-btn:disabled { opacity: 0.5; cursor: default; }
+
+        /* ── Report Screen ── */
+        #report-screen {
+            display: none;
+            height: 100vh;
+            overflow-y: auto;
+        }
+
+        .report-wrap {
+            max-width: 620px;
+            margin: 0 auto;
+            padding: 3rem 1.5rem;
+        }
+
+        .report-header { text-align: center; margin-bottom: 2rem; }
+
+        .report-header h1 {
+            font-size: 1.6rem;
+            font-weight: 600;
+            margin-bottom: 0.3rem;
+            color: var(--ink);
+        }
+
+        .report-header .meta { color: var(--muted); font-size: 0.88rem; }
+
+        .report-card {
+            background: var(--surface);
+            border: 1px solid var(--border);
+            border-radius: 24px;
+            padding: 2rem;
+            box-shadow: var(--shadow);
+        }
+
+        .score-big { text-align: center; margin-bottom: 1.5rem; }
+        .score-big .num { font-size: 3.6rem; font-weight: 700; color: var(--accent); }
+        .score-big .denom { font-size: 1.2rem; color: var(--muted); }
+
+        .dims {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 0.5rem 1.25rem;
+            margin-bottom: 1rem;
+        }
+
+        .dim {
+            display: flex;
+            justify-content: space-between;
+            padding: 0.65rem 0;
+            border-bottom: 1px solid var(--border);
+            font-size: 0.9rem;
+        }
+
+        .dim .label { color: var(--muted); text-transform: capitalize; }
+        .dim .val { color: var(--ink); font-weight: 700; }
+
+        .section-label {
+            font-size: 0.7rem;
+            color: var(--muted);
+            text-transform: uppercase;
+            letter-spacing: 0.1em;
+            margin: 1.25rem 0 0.5rem;
+            font-weight: 600;
+        }
+
+        .insight-list { display: flex; flex-direction: column; gap: 0.4rem; }
+
+        .insight {
+            padding: 0.6rem 0.85rem;
+            background: var(--surface-2);
+            border-radius: 10px;
+            border-left: 3px solid var(--muted);
+            font-size: 0.88rem;
+            line-height: 1.5;
+            color: var(--ink-2);
+        }
+
+        .insight.good { border-left-color: var(--ok); }      /* strengths — green  */
+        .insight.weak { border-left-color: var(--warn); }    /* weak areas — amber */
+        .insight.flag { border-left-color: var(--err); }     /* red flags — red    */
+        .insight.tip  { border-left-color: var(--accent); }  /* tips — terracotta  */
+
+        .summary-text {
+            color: var(--ink-2);
+            font-size: 0.92rem;
+            line-height: 1.7;
+            margin-top: 1rem;
+        }
+
+        .verdict {
+            text-align: center;
+            padding: 0.9rem;
+            margin-top: 1.5rem;
+            border-radius: 14px;
+            font-weight: 700;
+            font-size: 0.9rem;
+            letter-spacing: 0.05em;
+        }
+
+        .verdict.advance { background: #e4efd9; color: #4d6b3d; }
+        .verdict.reject  { background: #f5dedb; color: #8a3529; }
+        .verdict.hold    { background: #f6e6c5; color: #7a5714; }
+    </style>
+</head>
+<body>
+
+<!-- ── Start Screen ── -->
+<div id="start-screen">
+    <div class="start-card">
+        <div class="brand">Asendia</div>
+        <h1>AI Interview</h1>
+        <p class="sub">Voice-only technical conversation</p>
+        <div class="role-chip">AI / ML Engineer</div>
+        <button id="start-btn">Join Interview</button>
+        <p class="start-hint">🎧 Headphones recommended — your mic stays open, so you can jump in any time.</p>
+    </div>
+</div>
+
+<!-- ── Call Screen ── -->
+<div id="call-screen">
+    <div class="top-bar">
+        <span class="top-brand">Asendia</span>
+        <span class="turn-badge" id="turn-badge">Turn 0</span>
+    </div>
+
+    <div class="call-main">
+        <div class="alex">
+            <svg class="voice-line idle" id="voice-line" viewBox="0 0 340 72" preserveAspectRatio="none">
+                <polyline id="voice-path" points="0,36 340,36" />
+            </svg>
+            <div class="name">Alex</div>
+            <div class="status" id="status"><span id="status-text">Joining…</span></div>
+        </div>
+    </div>
+
+    <div class="bottom-bar">
+        <div class="mic-wrap">
+            <svg class="mic-line" id="mic-line" viewBox="0 0 92 22" preserveAspectRatio="none">
+                <polyline id="mic-path" points="0,11 92,11" />
+            </svg>
+            <button class="mic-btn live" id="mic-btn" title="Mute / unmute" aria-label="Mute microphone">
+                <svg class="mic-svg icon-on" viewBox="0 0 24 24" fill="currentColor">
+                    <path d="M12 14c1.66 0 3-1.34 3-3V5c0-1.66-1.34-3-3-3S9 3.34 9 5v6c0 1.66 1.34 3 3 3z"/>
+                    <path d="M17 11c0 2.76-2.24 5-5 5s-5-2.24-5-5H5c0 3.53 2.61 6.43 6 6.92V21h2v-3.08c3.39-.49 6-3.39 6-6.92h-2z"/>
+                </svg>
+                <svg class="mic-svg icon-off" viewBox="0 0 24 24" fill="currentColor">
+                    <path d="M19 11h-1.7c0 .74-.16 1.43-.43 2.05l1.23 1.23c.56-.98.9-2.09.9-3.28zM15 11.16L9 5.18V5c0-1.66 1.34-3 3-3s3 1.34 3 3v6.16zM4.27 3L3 4.27l6 6V11c0 1.66 1.33 3 3 3 .22 0 .44-.03.65-.08l1.66 1.66c-.71.33-1.5.52-2.31.52-2.76 0-5.3-2.1-5.3-5.1H5c0 3.41 2.72 6.23 6 6.72V21h2v-3.28c.91-.13 1.77-.45 2.54-.9L19.73 21 21 19.73 4.27 3z"/>
+                </svg>
+            </button>
+        </div>
+        <div class="mic-hint" id="mic-hint">Mic on — Alex is listening</div>
+        <button class="end-btn" id="end-btn">End interview</button>
+    </div>
+</div>
+
+<!-- ── Report Screen ── -->
+<div id="report-screen">
+    <div class="report-wrap">
+        <div class="report-header">
+            <h1>Interview Complete</h1>
+            <p class="meta" id="report-meta"></p>
+        </div>
+        <div class="report-card" id="report-card"></div>
+    </div>
+</div>
+
+<script src="/static/app.js"></script>
+</body>
+</html>
